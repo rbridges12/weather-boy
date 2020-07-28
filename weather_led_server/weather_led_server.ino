@@ -78,16 +78,6 @@ void handle_index()
 // handler for GET request to send all LED settings to control server
 void handle_sync_data()
 {
-    // int toggleStatus = 0;
-    // if (led_on == false)
-    // {
-    //     toggleStatus = 0;
-    // }
-    // else
-    // {
-    //     toggleStatus = 1;
-    // }
-
     // add all LED settings to JSON
     StaticJsonDocument<json_capacity> message;
     message["toggle"] = (int)led_on;
@@ -106,8 +96,6 @@ void handle_sync_data()
 // handler for POST request to change the RGB color of the LED
 void handle_update_rgb()
 {
-    Serial.println("udpate_rgb requested"); // debugging
-
     // check for POST request body
     if (!server.hasArg("plain"))
     {
@@ -269,18 +257,6 @@ void handle_get_humidity()
 // update the LED color, brightness, and toggle
 void update_led()
 {
-    // debugging
-    Serial.print("red = ");
-    Serial.println(red);
-    Serial.print("green = ");
-    Serial.println(green);
-    Serial.print("blue = ");
-    Serial.println(blue);
-    Serial.print("brightness = ");
-    Serial.println(brightness);
-    Serial.print("led_on = ");
-    Serial.println(led_on);
-
     if (led_on)
     {
         float brightness_factor = brightness / 255.0;
