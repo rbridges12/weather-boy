@@ -53,8 +53,9 @@ void setup()
 
     //assign handlers
     server.on("/", handle_index);
-    server.on("/get_temp", handle_get_temp);
-    server.on("/get_humidity", handle_get_humidity);
+    // server.on("/get_temp", handle_get_temp);
+    // server.on("/get_humidity", handle_get_humidity);
+    server.on("/get_weather_data", handle_get_weather_data);
     server.on("/update_brightness", handle_update_brightness);
     server.on("/toggle_led", handle_toggle_led);
     server.on("/update_rgb", handle_update_rgb);
@@ -215,43 +216,60 @@ void handle_toggle_led()
     server.send(200, "LED has been turned on");
 }
 
-// handler for GET request to send temp sensor value, sends as JSON
-void handle_get_temp()
+// // handler for GET request to send temp sensor value, sends as JSON
+// void handle_get_temp()
+// {
+//     // read and print  sensor values
+//     // TODO: move F/C conversion to the control server
+//     float tempC = weather_sensor.readTemperature();
+//     float tempF = weather_sensor.convertCtoF(tempC);
+//     Serial.print("Temperature (C) = ");
+//     Serial.println(tempC);
+//     Serial.print("Temperature (F) = ");
+//     Serial.println(tempF);
+
+//     // put temp data in JSON
+//     StaticJsonDocument<json_capacity> temperature_info;
+//     temperature_info["tempC"] = tempC;
+//     temperature_info["tempF"] = tempF;
+//     String serialized_temp = "";
+//     serializeJson(temperature_info, serialized_temp);
+
+//     server.send(200, "text/plain", serialized_temp);
+// }
+
+// // handler for GET request to send humidity sensor value, sends as JSON
+// void handle_get_humidity()
+// {
+//     // read and print sensor value
+//     float humidity = weather_sensor.readHumidity();
+//     Serial.print("Humidity = ");
+//     Serial.println(humidity);
+
+//     // put humidity data in JSON
+//     StaticJsonDocument<json_capacity> humidity_info;
+//     humidity_info["humidity"] = humidity;
+//     String serialized_humidity = "";
+//     serializeJson(humidity_info, serialized_humidity);
+
+//     server.send(200, "text/plain", serialized_humidity);
+// }
+
+// handler for GET request to send temp and humidity data in a JSON string
+void handle_get_weather_data()
 {
-  // read and print  sensor values
-  // TODO: move F/C conversion to the control server
-  float tempC = weather_sensor.readTemperature();
-  float tempF = weather_sensor.convertCtoF(tempC);
-  Serial.print("Temperature (C) = ");
-  Serial.println(tempC);
-  Serial.print("Temperature (F) = ");
-  Serial.println(tempF);
+    // read sensor data
+    float temp = weather_sensor.readTemperature();
+    float humidity = weather_sensor.readHumidity();
 
-  // put temp data in JSON
-  StaticJsonDocument<json_capacity> temperature_info;
-  temperature_info["tempC"] = tempC;
-  temperature_info["tempF"] = tempF;
-  String serialized_temp = "";
-  serializeJson(temperature_info, serialized_temp);
+    // put it in JSON
+    StaticJsonDocument<json_capacity> weather_data;
+    weather_data["temp"] = temp;
+    weather_data["humidity"] = humidity;
+    String weather_data_json = "";
+    serializeJson(weather_data, weather_data_json);
 
-  server.send(200, "text/plain", serialized_temp);
-}
-
-// handler for GET request to send humidity sensor value, sends as JSON
-void handle_get_humidity()
-{
-  // read and print sensor value
-  float humidity = weather_sensor.readHumidity();
-  Serial.print("Humidity = ");
-  Serial.println(humidity);
-
-  // put humidity data in JSON
-  StaticJsonDocument<json_capacity> humidity_info;
-  humidity_info["humidity"] = humidity;
-  String serialized_humidity = "";
-  serializeJson(humidity_info, serialized_humidity);
-
-  server.send(200, "text/plain", serialized_humidity);
+    server.send(200, "text/plain", weather_data_json);
 }
 
 // update the LED color, brightness, and toggle
