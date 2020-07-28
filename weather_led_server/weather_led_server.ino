@@ -24,7 +24,7 @@ const char *password = "";      // Wi-Fi Password
 const char *server_domain_name = "http://iot-testing.herokuapp.com";
 
 ESP8266WebServer server(port);
-DHT weather_sensor(DHT11_PIN, DHT11);
+weather_sensor DHT(DHT11_PIN, DHT11);
 
 void setup()
 {
