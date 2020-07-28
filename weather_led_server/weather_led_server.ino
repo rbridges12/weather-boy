@@ -8,7 +8,6 @@
 #define RED_PIN 4
 #define GREEN_PIN 5
 #define BLUE_PIN 16
-#define STATUS_PIN LED_BUILTIN
 #define DHT11_PIN 2
 
 // LED values
@@ -18,11 +17,11 @@ uint8_t green = 128;
 uint8_t brightness = 75;
 bool led_on = false;
 
-char server_domain_name[] = "http://iot-testing.herokuapp.com";
 const int port = 8080;
 const int json_capacity = 1000; // Json document capacity
 const char *ssid = "";          // Wi-Fi SSID
 const char *password = "";      // Wi-Fi Password
+const char *server_domain_name = "http://iot-testing.herokuapp.com";
 
 ESP8266WebServer server(port);
 DHT weather_sensor(DHT11_PIN, DHT11);
@@ -32,7 +31,6 @@ void setup()
     pinMode(RED_PIN, OUTPUT);
     pinMode(GREEN_PIN, OUTPUT);
     pinMode(BLUE_PIN, OUTPUT);
-    pinMode(STATUS_PIN, OUTPUT);
 
     Serial.begin(115200);
     weather_sensor.begin();
@@ -59,6 +57,7 @@ void setup()
     server.on("/get_humidity", handle_get_humidity);
     server.on("/update_brightness", handle_update_brightness);
     server.on("/toggle_led", handle_toggle_led);
+    server.on("/update_rgb", handle_update_rgb);
     server.on("/sync_data", handle_sync_data);
 
     // start server
