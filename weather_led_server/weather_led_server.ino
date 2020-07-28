@@ -5,7 +5,7 @@
 #include <ArduinoJson.h>
 
 // pins
-#define RED_PIN 5
+#define RED_PIN 4
 #define GREEN_PIN 5
 #define BLUE_PIN 16
 #define STATUS_PIN LED_BUILTIN
@@ -242,8 +242,8 @@ void handle_get_temp()
 
   // put temp data in JSON
   StaticJsonDocument<json_capacity> temperature_info;
-  temperatureInfo["tempC"] = tempC;
-  temperatureInfo["tempF"] = tempF;
+  temperature_info["tempC"] = tempC;
+  temperature_info["tempF"] = tempF;
   String serialized_temp = "";
   serializeJson(temperature_info, serialized_temp);
 
@@ -295,81 +295,83 @@ void update_led()
         digitalWrite(GREEN_PIN, LOW);
         digitalWrite(BLUE_PIN, LOW);
     }
+}
 
-    void send_ip()
+void send_ip()
+{
+    WiFiClient api_client;
+
+    // connect to ipify API
+    if (!api_client.connect("api.ipify.org", 80))
     {
-        WiFiClient api_client;
-
-        // connect to ipify API
-        if (!api_client.connect("api.ipify.org", 80))
-        {
-            Serial.println("failed to connect to ipify");
-            return;
-        }
-
-        // request plain text IP from API, timeout after 5 seconds
-        api_client.print("GET / HTTP/1.1\r\nHost: api.ipify.org\r\n\r\n");
-        unsigned long timeout = millis() + 5000;
-        while (!api_client.available())
-        {
-            if (millis() > timeout)
-            {
-                Serial.println("ipify timed out");
-                api_client.stop();
-                return;
-            }
-        }
-
-        // read the API response and parse the IP address string
-        String raw_msg = api_client.readString();
-        api_client.stop();
-        int i = raw_msg.length() - 1;
-        while (raw_msg.charAt(i) != '\n')
-        {
-            i--;
-        }
-        String ip_string = raw_msg.substring(i + 1);
-        Serial.println(ip_string);
-
-        // connect client to the control server with public IP in the address
-        HTTPClient client;
-        String url = server_domain_name + (String) "/api/led_control/client_ip/" + ip_string;
-        client.begin(url);
-
-        // send GET request and test connection
-        int http_code = client.GET();
-        if (!client.connected())
-        {
-            Serial.print("could not connect to ");
-            Serial.println(url);
-        }
-        client.end();
-        Serial.print("HTTP code from IP send request: ");
-        Serial.println(http_code);
+        Serial.println("failed to connect to ipify");
+        return;
     }
 
-    // send weather data to control server
-    void store_data()
+    // request plain text IP from API, timeout after 5 seconds
+    api_client.print("GET / HTTP/1.1\r\nHost: api.ipify.org\r\n\r\n");
+    unsigned long timeout = millis() + 5000;
+    while (!api_client.available())
     {
-        // read sensor values
-        float tempC = DHT.readTemperature();
-        float tempF = DHT.convertCtoF(tempC);
-        float humidity = DHT.readHumidity();
-        Serial.println(tempC);
-        Serial.println(tempF);
-        Serial.println(humidity);
-        Serial.println();
-
-        // send data to server
-        HTTPClient client;
-        String url = server_domain_name + (String) "/api/temp_control/store_data/" + (String)tempF + "/" + (String)tempC + "/" + (String)humidity;
-        client.begin(url);
-        int http_code = client.GET();
-        if (!client.connected())
+        if (millis() > timeout)
         {
-            Serial.print("could not connect to ");
-            Serial.println(url);
+            Serial.println("ipify timed out");
+            api_client.stop();
+            return;
         }
-        client.end();
-        Serial.print("HTTP code from weather data request: ");
-        Serial.println(http_code);
+    }
+
+    // read the API response and parse the IP address string
+    String raw_msg = api_client.readString();
+    api_client.stop();
+    int i = raw_msg.length() - 1;
+    while (raw_msg.charAt(i) != '\n')
+    {
+        i--;
+    }
+    String ip_string = raw_msg.substring(i + 1);
+    Serial.println(ip_string);
+
+    // connect client to the control server with public IP in the address
+    HTTPClient client;
+    String url = server_domain_name + (String) "/api/led_control/client_ip/" + ip_string;
+    client.begin(url);
+
+    // send GET request and test connection
+    int http_code = client.GET();
+    if (!client.connected())
+    {
+        Serial.print("could not connect to ");
+        Serial.println(url);
+    }
+    client.end();
+    Serial.print("HTTP code from IP send request: ");
+    Serial.println(http_code);
+}
+
+// send weather data to control server
+void store_data()
+{
+    // read sensor values
+    float tempC = weather_sensor.readTemperature();
+    float tempF = weather_sensor.convertCtoF(tempC);
+    float humidity = weather_sensor.readHumidity();
+    Serial.println(tempC);
+    Serial.println(tempF);
+    Serial.println(humidity);
+    Serial.println();
+
+    // send data to server
+    HTTPClient client;
+    String url = server_domain_name + (String) "/api/temp_control/store_data/" + (String)tempF + "/" + (String)tempC + "/" + (String)humidity;
+    client.begin(url);
+    int http_code = client.GET();
+    if (!client.connected())
+    {
+        Serial.print("could not connect to ");
+        Serial.println(url);
+    }
+    client.end();
+    Serial.print("HTTP code from weather data request: ");
+    Serial.println(http_code);
+}
