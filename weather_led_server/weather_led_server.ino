@@ -24,7 +24,7 @@ const char *password = "";      // Wi-Fi Password
 const char *server_domain_name = "http://iot-testing.herokuapp.com";
 
 ESP8266WebServer server(port);
-weather_sensor DHT(DHT11_PIN, DHT11);
+DHT DHT(DHT11_PIN, DHT11);
 
 void setup()
 {
@@ -33,7 +33,7 @@ void setup()
     pinMode(BLUE_PIN, OUTPUT);
 
     Serial.begin(115200);
-    weather_sensor.begin();
+    DHT.begin();
     WiFi.begin(ssid, password);
 
     // wait for connection
@@ -232,8 +232,8 @@ void handle_get_temp()
 {
   // read and print  sensor values
   // TODO: move F/C conversion to the control server
-  float tempC = weather_sensor.readTemperature();
-  float tempF = weather_sensor.convertCtoF(tempC);
+  float tempC = DHT.readTemperature();
+  float tempF = DHT.convertCtoF(tempC);
   Serial.print("Temperature (C) = ");
   Serial.println(tempC);
   Serial.print("Temperature (F) = ");
@@ -253,7 +253,7 @@ void handle_get_temp()
 void handle_get_humidity()
 {
   // read and print sensor value
-  float humidity = weather_sensor.readHumidity();
+  float humidity = DHT.readHumidity();
   Serial.print("Humidity = ");
   Serial.println(humidity);
 
@@ -352,9 +352,9 @@ void send_ip()
 void store_data()
 {
     // read sensor values
-    float tempC = weather_sensor.readTemperature();
-    float tempF = weather_sensor.convertCtoF(tempC);
-    float humidity = weather_sensor.readHumidity();
+    float tempC = DHT.readTemperature();
+    float tempF = DHT.convertCtoF(tempC);
+    float humidity = DHT.readHumidity();
     Serial.println(tempC);
     Serial.println(tempF);
     Serial.println(humidity);
